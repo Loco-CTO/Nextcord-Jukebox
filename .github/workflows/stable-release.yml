@@ -17,7 +17,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.x'  # You can specify a specific Ruby version if needed
+          ruby-version: '3.1'  # Use a specific Ruby version available on Ubuntu 22.04
 
       - name: Install dependencies
         run: |
