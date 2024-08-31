@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          gem install github-changelog-generator
+          gem install github_changelog_generator
           bundle install # if you have a Gemfile
 
       - name: Load version from version.py
