@@ -19,10 +19,8 @@ jobs:
         with:
           ruby-version: '3.1'  # Use a specific Ruby version available on Ubuntu 22.04
 
-      - name: Install dependencies
-        run: |
-          gem install github_changelog_generator
-          bundle install # if you have a Gemfile
+      - name: Install github_changelog_generator
+        run: gem install github_changelog_generator
 
       - name: Load version from version.py
         id: version
