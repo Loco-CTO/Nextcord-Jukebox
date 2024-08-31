@@ -1,27 +1,78 @@
-# This is a basic workflow to help you get started with the GitHub Auto-Release on Commit Action.
-
-name: AutoRelease
+name: Release
 
 on:
   push:
-    branches: [ master ]
-  workflow_dispatch: 
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:  # Enable manual trigger
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   release:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v2
-      - uses: CupOfTea696/gh-action-auto-release@v1.0.0
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          title: "Release: $version"
-          tag: "v$semver"
-          draft: false
-          regex: "/^Release: #{semver}$/i"
+          ruby-version: '3.1'  # Use a specific Ruby version available on Ubuntu 22.04
+
+      - name: Install github_changelog_generator
+        run: gem install github_changelog_generator
+
+      - name: Load version from version.py
+        id: version
+        run: |
+          import re
+          with open('version.py') as f:
+              content = f.read()
+              print(f"Content of version.py:\n{content}")  # Debugging output
+              match = re.search(r"__version__ = ['\"]([^'\"]+)['\"]", content)
+              if match:
+                  version = match.group(1)
+                  print(f"VERSION={version}")
+              else:
+                  raise ValueError("Version string not found in version.py")
+        shell: python
+
+      - name: Generate release notes
+        id: generate_release_notes
+        run: |
+          github_changelog_generator \
+            --user Loco-CTO \
+            --project Nextcord-Jukebox \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --output CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ steps.version.outputs.version }}
+          body: |
+            # 🚀| Rystal V6 ${{ steps.version.outputs.version }}
+            We’re thrilled to announce the launch of Rystal V6, version ${{ steps.version.outputs.version }}!
+            
+            This release brings a host of exciting new features, improvements, and bug fixes designed to enhance your Rystal experience.
+            
+            As always, we advise pausing your bot and performing a full backup, including your database, before upgrading.
+            
+            ## 🔄| Changelog 
+            ${{ steps.generate_release_notes.outputs.body }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: path/to/your/asset
+          asset_name: asset_name.zip
+          asset_content_type: application/zip
