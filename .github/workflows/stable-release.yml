@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*.*.*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:  # Enable manual trigger
 
 jobs:
   release:
@@ -13,14 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          python-version: '3.x'
+          ruby-version: '3.x'  # You can specify a specific Ruby version if needed
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          gem install github-changelog-generator
+          bundle install # if you have a Gemfile
 
       - name: Load version from version.py
         id: version
@@ -34,10 +36,9 @@ jobs:
 
       - name: Generate release notes
         id: generate_release_notes
-        uses: github-release-notes/github-release-notes@v1.0.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref }}
+        run: |
+          github_changelog_generator --output CHANGELOG.md
+          # You can customize the generator options as needed
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
