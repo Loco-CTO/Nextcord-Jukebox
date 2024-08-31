@@ -28,15 +28,23 @@ jobs:
           import re
           with open('version.py') as f:
               content = f.read()
-              version = re.search(r"__version__ = ['\"]([^'\"]+)['\"]", content).group(1)
-              print(f"VERSION={version}")
+              print(f"Content of version.py:\n{content}")  # Debugging output
+              match = re.search(r"__version__ = ['\"]([^'\"]+)['\"]", content)
+              if match:
+                  version = match.group(1)
+                  print(f"VERSION={version}")
+              else:
+                  raise ValueError("Version string not found in version.py")
         shell: python
 
       - name: Generate release notes
         id: generate_release_notes
         run: |
-          github_changelog_generator --output CHANGELOG.md
-          # You can customize the generator options as needed
+          github_changelog_generator \
+            --user ${{ github.repository_owner }} \
+            --project ${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --output CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
