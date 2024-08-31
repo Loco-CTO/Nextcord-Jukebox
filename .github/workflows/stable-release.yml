@@ -43,10 +43,10 @@ jobs:
           github_changelog_generator \
             --user Loco-CTO \
             --project Nextcord-Jukebox \
-            --token ${{ secrets.GITHUB_TOKEN }} \
+            --token ${{ secrets.PERSONAL_ACCESS_TOKEN }} \
             --output CHANGELOG.md
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Create GitHub Release
         id: create_release
@@ -67,7 +67,7 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
